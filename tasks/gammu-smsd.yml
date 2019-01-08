@@ -1,0 +1,55 @@
+---
+# This file is to configure gammu smsd for essentia sms server. 
+# Modem used: # https://wammu.eu/phones/wavecom/6819/
+
+- name: Install gammu-smsd
+  package: 
+    name: 'gammu-smsd' 
+    state: present
+
+- name: create velneo folders for gammusmsd
+  file:
+    path: "{{ item }}"
+    owner: "{{ velneo_sms_gammu_user }}"
+    group: "{{ velneo_sms_gammu_user }}"
+    mode: "u+rwxs,g+rwxs,o+rx"
+    state: directory
+  with_items:
+    - "{{ velneo_sms_gammu_inboxpath }}"
+    - "{{ velneo_sms_gammu_outboxpath }}"
+    - "{{ velneo_sms_gammu_sentsmspath }}"
+    - "{{ velneo_sms_gammu_errorsmspath }}"
+
+- name: gammu-smsdrc config file to /etc/gammu-smsdrc
+  template: 
+    src: gammu-smsdrc.j2
+    dest: /etc/gammu-smsdrc
+    owner: "{{ velneo_sms_gammu_user }}"
+    mode: "u+rwx,g=r,o=r"
+  notify: restart gammu
+
+- name: Add permissions to velneo user
+  user:
+    name: "{{ velneo_server_sv_user }}"
+    state: present
+    createhome: no
+    append: yes
+    groups: "{{ velneo_sms_gammu_user }},{{ velneo_sms_devices_group }}"
+
+- name: Add permissions to gammu
+  user:
+    name: "{{ velneo_sms_gammu_user }}"
+    state: present
+    createhome: no
+    append: yes
+    groups: "{{ velneo_sms_devices_group }}"
+
+# TODO:
+# There is missing a handler    (DONE)
+# There is missing a template   (DONE,TOTEST)
+# Add velneo to dialout group   (DONE)
+# Add gammu to dialout group    (DONE)
+# Add velneo to gammu group     (DONE)
+# or execute velneo with root?  (No)
+# Documentar donde está en el código de velneo la ruta a usar para guardar los sms a enviar. (essentia)
+# Crear directorios inbox/outbox/sent (DONE)

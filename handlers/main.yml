@@ -1,0 +1,12 @@
+# file: handlers/main.yml
+
+- name: restart supervisor
+  service:
+    name: supervisor
+    state: restarted
+
+- name: restart gammu
+  service:
+    name: "{{ gammu_smsd_service_name }}"
+    state: restarted
+    sleep: 120

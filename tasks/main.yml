@@ -1,0 +1,33 @@
+---
+# file: tasks/main.yml
+
+# - include: multi_os.yml
+
+- name: create {{ infra_share }} directory
+  file: 
+    path: "{{ infra_share }}"
+    state: directory
+
+- name: install sms reports script
+  template:
+    src: sms_error.py.j2
+    dest: "{{ infra_share }}/sms_error.py"
+    owner: "root"
+    group: "root"
+    mode: 0755
+
+- cron: name='sms_error'
+        job='{{ infra_share }}/sms_error.py > /dev/null'
+        user='root'
+        cron_file='infra'
+        minute='00'
+        hour='21'
+
+- cron: name='restart_gammu_service'
+        job='service gammu-smsd stop && sleep 4 && service gammu-smsd start'
+        user='root'
+        cron_file='infra'
+        minute='15'
+        hour='7'
+
+- include: gammu-smsd.yml

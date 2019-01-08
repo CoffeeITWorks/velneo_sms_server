@@ -1,0 +1,9 @@
+# Configuration file for Gammu SMS Daemon
+
+# Gammu library configuration, see gammurc(5)
+
+{% if gammu_smsdrc_lines %}
+{% for l in gammu_smsdrc_lines %}
+{{ l }}
+{% endfor %}
+{% endif %}

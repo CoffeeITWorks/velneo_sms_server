@@ -1,0 +1,67 @@
+---
+# file defaults/main.yml
+
+velneo_sms_server_mail_from: "{{ ansible_host }}@localhost"
+
+velneo_sms_server_mail_to: '"root@localhost"'
+velneo_sms_server_mail_subject: "SMS Error Report - No reply"
+
+velneo_server_folder: "/opt/velneo"  # This var is also on velneo-server role
+
+velneo_sms_gammu_inboxpath: "{{ velneo_server_folder }}/gammu/inbox/"
+velneo_sms_gammu_outboxpath: "{{ velneo_server_folder }}/gammu/outbox/"
+velneo_sms_gammu_sentsmspath: "{{ velneo_server_folder }}/gammu/sent/"
+velneo_sms_gammu_errorsmspath: "{{ velneo_server_folder }}/gammu/error/"
+
+# Other important variables for permissions
+velneo_server_sv_user: "velneo" # This var is also on velneo_server role
+velneo_sms_gammu_user: "gammu"
+velneo_sms_devices_group: "dialout,uucp" # group required to write to /dev/ttyS0 /dev/ttyUSB0
+# uucp group if for locking options: https://wammu.eu/docs/manual/config/index.html#option-Use_Locking
+
+velneo_sms_server_error: "{{ velneo_sms_gammu_errorsmspath }}"
+
+infra_share: "/usr/local/share/infra"
+
+gammu_smsd_service_name: "gammu-smsd"
+gammu_smsdrc_lines:
+  - ''
+  - '# https://wammu.eu/docs/manual/config/index.html#gammurc'
+  - '[gammu]'
+  - '# Please configure this!'
+  - '# https://wammu.eu/phones/wavecom/6819/'
+  - 'device = /dev/ttyS0'
+  - 'name = Ostent Serial GSM modem'
+  - 'connection = at'
+  - '#model = Q2303A'
+  - 'use_locking = yes'
+  - '# Before enable logfile, create the file with touch filename and chown gammu:gammu filename (to give perms)'
+  - '# Logfile = /var/log/gammu_ttyUSB0.log'
+  - '# Logformat = errors'
+  - ''
+  - '[gammu1]'
+  - '# Please configure this!'
+  - 'port = /dev/ttyUSB0'
+  - 'name = USB Huawei'
+  - 'use_locking = yes'
+  - 'connection = at'
+  - '# Debugging'
+  - '# logformat = textall'
+  - '# SMSD configuration, see gammu-smsdrc(5)'
+  - 
+  - '# https://wammu.eu/docs/manual/smsd/config.html'
+  - '[smsd]'
+  - 'service = files'
+  - 'logfile = /var/log/gammu'
+  - '# Increase for debugging information'
+  - 'debuglevel = 1'
+  - 'CheckSecurity = 0'
+  - 'CheckBattery = 0'
+  - 'HangupCalls = 1'
+  - 
+  - '# Paths where messages are stored'
+  - 'inboxpath = {{ velneo_sms_gammu_inboxpath }}'
+  - 'outboxpath = {{ velneo_sms_gammu_outboxpath }}'
+  - 'sentsmspath = {{ velneo_sms_gammu_sentsmspath }}'
+  - 'errorsmspath = {{ velneo_sms_gammu_errorsmspath }}'
+  - ''

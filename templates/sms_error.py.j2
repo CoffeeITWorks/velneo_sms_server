@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+
+import glob
+import smtplib
+import mimetypes
+import os
+from email.mime.multipart import MIMEMultipart
+from email import encoders
+from email.message import Message
+from email.mime.audio import MIMEAudio
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
+from email.mime.text import MIMEText
+
+COMMASPACE = ', '
+
+emailfrom = "{{ velneo_sms_server_mail_from }}"
+emailto = [{{ velneo_sms_server_mail_to }}]
+
+msg = MIMEMultipart()
+msg["From"] = emailfrom
+msg["To"] = COMMASPACE.join(emailto)
+msg["Subject"] = "{{ velneo_sms_server_mail_subject }}"
+
+files = glob.glob("{{ velneo_sms_server_error }}" + "*.txt")
+
+for file in files:
+    ctype, encoding = mimetypes.guess_type(file)
+    
+    if ctype is None or encoding is not None:
+        ctype = "application/octet-stream"
+
+    maintype, subtype = ctype.split("/", 1)
+    fp = open(file, "rb")
+    attachment = MIMEBase(maintype, subtype)
+    attachment.set_payload(fp.read())
+    fp.close()
+    encoders.encode_base64(attachment)
+    fileName = os.path.split(file)
+    attachment.add_header("Content-Disposition", "attachment", filename=fileName[1])
+    msg.attach(attachment)
+
+server = smtplib.SMTP("127.0.0.1:25")
+server.sendmail(emailfrom, emailto, msg.as_string())
+server.quit()
+
+for file in files:
+    os.remove(file)
